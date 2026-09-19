@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Backend runtime data (should not be committed)
+backend/data/chroma_store/
+backend/data/app.db
+backend/.env
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.env
+
+# OS
+.DS_Store
