@@ -12,17 +12,9 @@ Every generated question maintains **source traceability**, allowing the system 
 
 ## 🚀 Demo
 
-> 🎥 **Demo Video:** *Add your demo link here*
+> 🎥 **Demo Video:** https://drive.google.com/drive/home?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto**
 
-### Screenshots
 
-| Dashboard        | Interview        |
-| ---------------- | ---------------- |
-| *Add screenshot* | *Add screenshot* |
-
-| Resume Analysis  | Interview Summary |
-| ---------------- | ----------------- |
-| *Add screenshot* | *Add screenshot*  |
 
 ---
 
