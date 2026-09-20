@@ -1,32 +1,49 @@
 """
-Embedding client.
+Embedding client (fastembed -- ONNX-based, no torch).
 
-Why local (sentence-transformers) instead of an API: no key required,
-free, and light enough (~80MB model) to run inside a free-tier hosted
-backend. Kept behind a thin wrapper so it could be swapped for an API
-based embedding model later without touching callers.
+Why fastembed instead of sentence-transformers: sentence-transformers
+pulls in torch as a dependency, which is a large runtime (even the
+CPU-only build) that meaningfully increases both install size and
+resident memory. fastembed uses ONNX Runtime with small, quantized
+models instead -- functionally similar embedding quality for this
+project's needs, at a fraction of the memory footprint. This matters
+because the app needs to run comfortably inside a 512MB memory ceiling
+on free hosting tiers.
+
+The model used here must match the model used by
+`scripts/precompute_embeddings.py` (the offline script that generates
+the committed embedding artifacts) -- if they don't match, query
+embeddings won't be comparable to the precomputed knowledge-base
+embeddings.
 """
-from sentence_transformers import SentenceTransformer
+import numpy as np
+from fastembed import TextEmbedding
 
 from app.config import get_settings
 
 settings = get_settings()
 
-_model: SentenceTransformer | None = None
+_model: TextEmbedding | None = None
 
 
-def _get_model() -> SentenceTransformer:
+def _get_model() -> TextEmbedding:
     global _model
     if _model is None:
-        _model = SentenceTransformer(settings.embedding_model)
+        _model = TextEmbedding(model_name=settings.embedding_model)
     return _model
 
 
-def embed_texts(texts: list[str]) -> list[list[float]]:
-    """Embed a batch of texts. Used for both KB chunks and query text."""
+def _normalize(vec: np.ndarray) -> np.ndarray:
+    norm = np.linalg.norm(vec)
+    return vec if norm == 0 else vec / norm
+
+
+def embed_query(text: str) -> np.ndarray:
+    """
+    Embeds a single query string and L2-normalizes it, matching how
+    embeddings.npy was precomputed -- so retrieval can use a plain dot
+    product for cosine similarity.
+    """
     model = _get_model()
-    return model.encode(texts, convert_to_numpy=True).tolist()
-
-
-def embed_text(text: str) -> list[float]:
-    return embed_texts([text])[0]
+    vec = next(model.embed([text]))
+    return _normalize(np.asarray(vec, dtype=np.float32))

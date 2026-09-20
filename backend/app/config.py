@@ -16,13 +16,13 @@ class Settings(BaseSettings):
 
     # LLM (Groq)
     groq_api_key: str = ""
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-20b"
 
-    # Embeddings (local sentence-transformers)
-    embedding_model: str = "all-MiniLM-L6-v2"
+    # Embeddings (fastembed -- ONNX-based, no torch, low memory)
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
 
-    # Vector store
-    chroma_persist_dir: str = "./data/chroma_store"
+    # Precomputed vector store (see scripts/precompute_embeddings.py)
+    precomputed_dir: str = "./data/precomputed"
 
     # App behavior
     cors_origins: str = "http://localhost:5173"

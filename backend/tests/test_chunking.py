@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from ingestion.ingest_knowledge_base import chunk_page_text, _encoding, CHUNK_SIZE_TOKENS
+from scripts.precompute_embeddings import chunk_page_text, _encoding, CHUNK_SIZE_TOKENS
 
 
 def test_chunk_page_text_empty_returns_empty_list():

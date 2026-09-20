@@ -3,11 +3,12 @@ Retrieval service (the "R" in RAG).
 
 Responsible for turning (role, candidate skills, topics already asked)
 into a query, and retrieving the most relevant knowledge-base chunks
-for that role's ChromaDB collection.
+for that role from the precomputed vector store.
 """
 from app.config import get_settings
 from app.roles import get_role
-from app.vectorstore import chroma_client
+from app.vectorstore import simple_store
+from app.vectorstore.embeddings import embed_query
 
 settings = get_settings()
 
@@ -38,7 +39,7 @@ def build_query(role_id: str, skills: list[str], already_asked_topics: list[str]
 def retrieve_context(role_id: str, query: str, top_k: int | None = None) -> list[dict]:
     """
     Returns the top_k most relevant chunks for this role's knowledge
-    base: [{id, text, metadata, distance}, ...]. Empty list if nothing
+    base: [{id, text, metadata, score}, ...]. Empty list if nothing
     is retrievable (caller must handle this -- see question_gen_service
     fallback behavior).
     """
@@ -47,4 +48,5 @@ def retrieve_context(role_id: str, query: str, top_k: int | None = None) -> list
         return []
 
     k = top_k or settings.retrieval_top_k
-    return chroma_client.query(role.collection_name, query, top_k=k)
+    query_embedding = embed_query(query)
+    return simple_store.query(role.id, query_embedding, top_k=k)

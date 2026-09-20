@@ -12,7 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.db.session import Base, engine
 from app.api import roles, sessions, interview
-from app.services.ingestion_runner import run_startup_ingestion
 
 settings = get_settings()
 
@@ -22,8 +21,14 @@ async def lifespan(app: FastAPI):
     # Create tables if they don't exist yet (simple approach appropriate
     # for this project's scope; a migration tool like Alembic would be
     # the next step for a longer-lived production system).
+    #
+    # Note: knowledge base ingestion is NOT run here. Embeddings are
+    # precomputed offline (see scripts/precompute_embeddings.py) and
+    # committed to the repo as static files, so the deployed process
+    # never needs to parse/chunk/embed the knowledge base itself -- this
+    # keeps startup memory low enough to run on memory-constrained free
+    # hosting tiers.
     Base.metadata.create_all(bind=engine)
-    run_startup_ingestion()
     yield
 
 
